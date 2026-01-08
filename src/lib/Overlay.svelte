@@ -10,6 +10,7 @@
   }>();
 
   let showSettings = $state(false);
+  let showInstructions = $state(false);
 </script>
 
 <div class="overlay {gameState === 'start' ? 'theme-strawberry' : 'theme-blueberry'}">
@@ -30,6 +31,7 @@
       <button disabled>Loading Assets...</button>
     {:else}
       <button onclick={onStart}>Play</button>
+      <button class="secondary-btn" onclick={() => showInstructions = true}>How to Play</button>
     {/if}
   {:else if gameState === 'won'}
     <h1>You Won!</h1>
@@ -49,6 +51,15 @@
 
   {#if showSettings}
     <Settings onClose={() => showSettings = false} />
+  {/if}
+
+  {#if showInstructions}
+    <div class="modal-backdrop" onclick={() => showInstructions = false}>
+      <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+        <p>Eat things that are smaller than you. Get eaten by things that are bigger than you. That is all. :)</p>
+        <button onclick={() => showInstructions = false}>Got it!</button>
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -143,6 +154,13 @@
     margin-top: 20px;
   }
 
+  .secondary-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid white;
+    color: white;
+    border-radius: 20px;
+  }
+
   .settings-btn {
     position: absolute;
     top: 20px;
@@ -161,4 +179,31 @@
     z-index: 20;
   }
   .settings-btn:hover { background: rgba(255, 255, 255, 0.4); transform: rotate(30deg); }
+
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .modal-content {
+    background: #2c3e50;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .modal-content p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+  }
 </style>
