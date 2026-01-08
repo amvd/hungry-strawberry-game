@@ -22,6 +22,7 @@
       JOYSTICK: $state.snapshot(CONFIG.GAME.JOYSTICK),
       BUTTERFLIES: $state.snapshot(CONFIG.GAME.BUTTERFLIES),
       SOUND: $state.snapshot(CONFIG.GAME.SOUND),
+      HAPTICS: $state.snapshot(CONFIG.GAME.HAPTICS),
       GROWTH_RATE: CONFIG.PLAYER.GROWTH_RATE
     }));
     onClose();
@@ -45,6 +46,13 @@
       <label class="checkbox-label">
         <input type="checkbox" bind:checked={CONFIG.GAME.SOUND.ENABLED} />
         Sound Enabled
+      </label>
+    </div>
+
+    <div class="setting-group">
+      <label class="checkbox-label">
+        <input type="checkbox" bind:checked={CONFIG.GAME.HAPTICS.ENABLED} />
+        Haptics Enabled
       </label>
     </div>
 

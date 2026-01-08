@@ -78,6 +78,7 @@
         if (s.JOYSTICK) CONFIG.GAME.JOYSTICK = { ...CONFIG.GAME.JOYSTICK, ...s.JOYSTICK };
         if (s.BUTTERFLIES) CONFIG.GAME.BUTTERFLIES.ENABLED = s.BUTTERFLIES.ENABLED;
         if (s.SOUND) CONFIG.GAME.SOUND.ENABLED = s.SOUND.ENABLED;
+        if (s.HAPTICS) CONFIG.GAME.HAPTICS.ENABLED = s.HAPTICS.ENABLED;
         CONFIG.PLAYER.GROWTH_RATE = s.GROWTH_RATE ?? CONFIG.PLAYER.GROWTH_RATE;
       } catch (e) { console.error("Failed to load settings:", e); }
     }
@@ -206,6 +207,7 @@
 
   function startGame() {
     initAudio();
+    if (navigator.vibrate && CONFIG.GAME.HAPTICS.ENABLED) navigator.vibrate(50);
     gameState = 'playing';
     playerY = (gameHeight - playerHeight) / 2;
     playerSize = CONFIG.PLAYER.START_SIZE * scaleMultiplier;
@@ -256,7 +258,7 @@
     if (timeElapsed >= CONFIG.GAME.WIN_TIME_MS) {
       updateHighScore();
       playWinSound();
-      if (navigator.vibrate) navigator.vibrate(500);
+      if (navigator.vibrate && CONFIG.GAME.HAPTICS.ENABLED) navigator.vibrate(500);
       gameState = 'won';
       return;
     }
@@ -418,13 +420,13 @@
       playerSize += enemy.width * scaledGrowthRate;
       score += enemy.type.basePoints;
       playDing();
-      if (navigator.vibrate) navigator.vibrate(50);
+      if (navigator.vibrate && CONFIG.GAME.HAPTICS.ENABLED) navigator.vibrate(50);
       enemy.isEaten = true;
     } else {
       // Die
       updateHighScore();
       playLossSound();
-      if (navigator.vibrate) navigator.vibrate(200);
+      if (navigator.vibrate && CONFIG.GAME.HAPTICS.ENABLED) navigator.vibrate(200);
       gameState = 'lost';
     }
   }

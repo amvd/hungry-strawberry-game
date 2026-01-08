@@ -47,6 +47,9 @@ export const CONFIG = $state({
     SOUND: {
       ENABLED: true,
     },
+    HAPTICS: {
+      ENABLED: true,
+    },
   },
   ENEMIES: [
     {
