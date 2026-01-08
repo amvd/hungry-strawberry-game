@@ -41,6 +41,7 @@
   let joystickActive = $state(false);
   let joystickValueY = $state(0);
   
+  let isFullscreen = $state(false);
   // Orientation State
   const isPortrait = $derived(gameHeight > gameWidth);
 
@@ -99,6 +100,27 @@
 
     lastTime = performance.now();
     loop(lastTime);
+  });
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        isFullscreen = true;
+      }).catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        isFullscreen = false;
+      }).catch(err => {
+        console.error(`Error attempting to exit full-screen mode: ${err.message} (${err.name})`);
+      });
+    }
+  }
+
+  // Listen for fullscreenchange event to keep state in sync if user exits via ESC key
+  document.addEventListener('fullscreenchange', () => {
+    isFullscreen = !!document.fullscreenElement;
   });
 
   function initAudio() {
@@ -194,7 +216,8 @@
   }
 
   function loop(timestamp: number) {
-    const deltaTime = timestamp - lastTime;
+    // Cap deltaTime to 100ms to prevent huge jumps during stutters
+    const deltaTime = Math.min(timestamp - lastTime, 100);
     lastTime = timestamp;
 
     update(deltaTime);
@@ -209,6 +232,8 @@
   }
 
   function update(deltaTime: number) {
+    const speedFactor = deltaTime / (1000 / 60); // Normalized to 60 FPS
+
     // Procedural Music
     if (audioCtx && audioCtx.state === 'running' && CONFIG.GAME.SOUND.ENABLED) {
       handleMusic(deltaTime);
@@ -216,7 +241,7 @@
 
     // Cosmetic Butterflies
     if (CONFIG.GAME.BUTTERFLIES?.ENABLED) {
-      updateButterflies(deltaTime);
+      updateButterflies(deltaTime, speedFactor);
     }
 
     if (gameState !== 'playing') {
@@ -243,26 +268,27 @@
     }
 
     // Player Movement
-    movePlayer();
+    movePlayer(speedFactor);
 
     // Enemy Movement & Collision
-    updateEnemies();
+    updateEnemies(speedFactor);
   }
 
-  function movePlayer() {
+  function movePlayer(speedFactor: number) {
     let moveDir = 0;
     if (keys.ArrowUp) moveDir = -1;
     if (keys.ArrowDown) moveDir = 1;
 
     if (joystickActive) {
-      playerY += joystickValueY * scaledMoveSpeed;
+      playerY += joystickValueY * scaledMoveSpeed * speedFactor;
     } else if (moveDir !== 0) {
-      playerY += moveDir * scaledMoveSpeed;
+      playerY += moveDir * scaledMoveSpeed * speedFactor;
     } else if (isMouseDown) {
       // Move towards mouse
       const diff = mouseTargetY - (playerY + playerHeight / 2);
-      if (Math.abs(diff) > scaledMoveSpeed) {
-        playerY += Math.sign(diff) * scaledMoveSpeed;
+      const currentMoveSpeed = scaledMoveSpeed * speedFactor;
+      if (Math.abs(diff) > currentMoveSpeed) {
+        playerY += Math.sign(diff) * currentMoveSpeed;
       } else {
         playerY += diff;
       }
@@ -316,7 +342,7 @@
     });
   }
 
-  function updateButterflies(deltaTime: number) {
+  function updateButterflies(deltaTime: number, speedFactor: number) {
     butterflyTimer += deltaTime;
     if (butterflyTimer > 2000) {
       spawnButterfly();
@@ -324,13 +350,13 @@
     }
     for (let i = butterflies.length - 1; i >= 0; i--) {
       const b = butterflies[i];
-      b.x -= b.speed;
+      b.x -= b.speed * speedFactor;
       b.y += Math.sin(timeElapsed / 300 + b.phase) * 1.5;
       if (b.x + b.size < -100) butterflies.splice(i, 1);
     }
   }
 
-  function updateEnemies() {
+  function updateEnemies(speedFactor: number) {
     for (let i = enemies.length - 1; i >= 0; i--) {
       const enemy = enemies[i];
 
@@ -340,11 +366,11 @@
         const targetY = playerY + playerHeight * 0.5;
 
         // Shrink dimensions
-        enemy.width *= 0.8;
-        enemy.height *= 0.8;
+        enemy.width *= Math.pow(0.8, speedFactor);
+        enemy.height *= Math.pow(0.8, speedFactor);
         // Move top-left coordinates so the enemy center follows the player center
-        enemy.x += (targetX - (enemy.x + enemy.width / 2)) * 0.3;
-        enemy.y += (targetY - (enemy.y + enemy.height / 2)) * 0.3;
+        enemy.x += (targetX - (enemy.x + enemy.width / 2)) * (1 - Math.pow(0.7, speedFactor));
+        enemy.y += (targetY - (enemy.y + enemy.height / 2)) * (1 - Math.pow(0.7, speedFactor));
 
         if (enemy.width < 1) {
           enemies.splice(i, 1);
@@ -352,7 +378,7 @@
         continue;
       }
 
-      enemy.x -= enemy.speed;
+      enemy.x -= enemy.speed * speedFactor;
 
       // Check Collision
       if (checkCollision(enemy)) {
@@ -448,8 +474,8 @@
     style="width: 100%; height: 100%; background-color: {CONFIG.GAME.BACKGROUND_COLOR};"
     bind:clientWidth={gameWidth}
     bind:clientHeight={gameHeight}
-    on:mousedown={handleMouseDown}
-    on:mousemove={handleMouseMove}
+    onmousedown={handleMouseDown}
+    onmousemove={handleMouseMove}
     role="application"
     tabindex="0"
   >
@@ -481,6 +507,24 @@
     {:else}
       <Overlay {gameState} {score} {highScore} {isPreloading} onStart={startGame} />
     {/if}
+
+    <button class="fullscreen-btn" onclick={toggleFullscreen} aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+      {#if isFullscreen}
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 12 10 12 10 6"></polyline>
+          <polyline points="20 12 14 12 14 6"></polyline>
+          <polyline points="14 18 14 12 20 12"></polyline>
+          <polyline points="10 18 10 12 4 12"></polyline>
+        </svg>
+      {:else}
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <polyline points="21 15 21 21 15 21"></polyline>
+          <polyline points="3 9 3 3 9 3"></polyline>
+        </svg>
+      {/if}
+    </button>
 
     {#if isPortrait && gameWidth < 1024}
       <div class="orientation-prompt">
@@ -639,4 +683,23 @@
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(90deg); }
   }
+
+  .fullscreen-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s, transform 0.2s;
+    z-index: 20; /* Ensure it's above other game elements */
+    color: white; /* Make icon visible */
+  }
+  .fullscreen-btn:hover { background: rgba(255, 255, 255, 0.4); }
 </style>

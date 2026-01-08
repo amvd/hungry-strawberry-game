@@ -145,7 +145,7 @@
 
   .settings-btn {
     position: absolute;
-    bottom: 20px;
+    top: 20px;
     right: 20px;
     background: rgba(255, 255, 255, 0.2);
     border: none;
