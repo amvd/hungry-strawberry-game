@@ -214,4 +214,16 @@ export class GameEngine {
     if (this.playerY < 0) this.playerY = 0;
     if (this.playerY + this.playerHeight > this.height) this.playerY = this.height - this.playerHeight;
   }
+
+  pause() {
+    if (this.gameState === 'playing') this.gameState = 'paused';
+  }
+
+  resume() {
+    if (this.gameState === 'paused') this.gameState = 'playing';
+  }
+
+  quit() {
+    this.gameState = 'start';
+  }
 }

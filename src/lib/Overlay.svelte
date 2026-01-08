@@ -1,19 +1,22 @@
 <script lang="ts">
   import Settings from './Settings.svelte';
+  import type { GameState } from './types';
 
-  let { gameState, score, highScore, isPreloading, onStart } = $props<{
-    gameState: 'start' | 'playing' | 'won' | 'lost';
+  let { gameState, score, highScore, isPreloading, onStart, onResume, onQuit } = $props<{
+    gameState: GameState;
     score: number;
     highScore: number;
     isPreloading: boolean;
     onStart: () => void;
+    onResume?: () => void;
+    onQuit?: () => void;
   }>();
 
   let showSettings = $state(false);
   let showInstructions = $state(false);
 </script>
 
-<div class="overlay {gameState === 'start' ? 'theme-strawberry' : 'theme-blueberry'}">
+<div class="overlay {['start', 'paused'].includes(gameState) ? 'theme-strawberry' : 'theme-blueberry'}">
   {#if gameState === 'start'}
     <svg width="0" height="0" style="position: absolute;">
       <defs>
@@ -43,6 +46,10 @@
     <p class="final-score">{score}</p>
     <p class="high-score">Best: {highScore}</p>
     <button onclick={onStart}>Try Again</button>
+  {:else if gameState === 'paused'}
+    <h1>Paused</h1>
+    <button onclick={onResume}>Resume</button>
+    <button class="secondary-btn" onclick={onQuit}>Quit to Menu</button>
   {/if}
 
   <button class="settings-btn" onclick={() => showSettings = true} aria-label="Settings">

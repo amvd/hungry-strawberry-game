@@ -189,6 +189,8 @@
     {/if}
 
     {#if game.gameState === 'playing'}
+      <button class="pause-btn" onclick={() => game.pause()} aria-label="Pause Game">⏸</button>
+
       <Player playerY={game.playerY} playerSize={game.playerSize} playerHeight={game.playerHeight} />
       
       {#each game.enemies as enemy (enemy.id)}
@@ -205,7 +207,15 @@
         centerY={joystickCenterY}
       />
     {:else}
-      <Overlay gameState={game.gameState} score={game.score} highScore={game.highScore} {isPreloading} onStart={() => game.start()} />
+      <Overlay 
+        gameState={game.gameState} 
+        score={game.score} 
+        highScore={game.highScore} 
+        {isPreloading} 
+        onStart={() => game.start()} 
+        onResume={() => game.resume()}
+        onQuit={() => game.quit()}
+      />
     {/if}
 
     <button class="fullscreen-btn" onclick={toggleFullscreen} aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
@@ -268,6 +278,26 @@
     user-select: none;
     cursor: crosshair;
   }
+
+  .pause-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s;
+    z-index: 20;
+    color: white;
+  }
+  .pause-btn:hover { background: rgba(255, 255, 255, 0.4); }
 
   .sky {
     position: absolute;
