@@ -19,10 +19,23 @@
   let isMouseDown = $state(false);
   let mouseTargetY = $state(0);
   let isFullscreen = $state(false);
+
+  // Mobile/Joystick State
   let joystickActive = $state(false);
   let joystickValueY = $state(0);
+  let joystickCenterX = $state(0);
+  let joystickCenterY = $state(0);
+  let joystickTouchId = $state<number | null>(null);
 
   let animationFrameId: number;
+
+  // Handle joystick default position
+  $effect(() => {
+    if (!joystickActive && game.height > 0) {
+      joystickCenterX = 40 + CONFIG.GAME.JOYSTICK.BASE_SIZE / 2;
+      joystickCenterY = game.height - 40 - CONFIG.GAME.JOYSTICK.BASE_SIZE / 2;
+    }
+  });
 
   onMount(async () => {
     const imagesToPreload = [
@@ -118,6 +131,18 @@
     isMouseDown = false;
   }
 
+  function handleTouchStart(e: TouchEvent) {
+    if (game.gameState !== 'playing') return;
+    if ((e.target as HTMLElement).closest('button')) return;
+
+    const touch = e.changedTouches[0];
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    joystickCenterX = touch.clientX - rect.left;
+    joystickCenterY = touch.clientY - rect.top;
+    joystickTouchId = touch.identifier;
+    joystickActive = true;
+  }
+
   function updateMouseTarget(e: MouseEvent) {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     mouseTargetY = e.clientY - rect.top;
@@ -144,6 +169,7 @@
     bind:clientHeight={game.height}
     onmousedown={handleMouseDown}
     onmousemove={handleMouseMove}
+    ontouchstart={handleTouchStart}
     role="application"
     tabindex="0"
   >
@@ -171,7 +197,13 @@
 
       <HUD timeElapsed={game.timeElapsed} score={game.score} />
 
-      <Joystick bind:valueY={joystickValueY} bind:active={joystickActive} />
+      <Joystick 
+        bind:valueY={joystickValueY} 
+        bind:active={joystickActive} 
+        bind:touchId={joystickTouchId}
+        centerX={joystickCenterX}
+        centerY={joystickCenterY}
+      />
     {:else}
       <Overlay gameState={game.gameState} score={game.score} highScore={game.highScore} {isPreloading} onStart={() => game.start()} />
     {/if}
@@ -232,6 +264,7 @@
     position: relative;
     overflow: hidden;
     border: none;
+    touch-action: none;
     user-select: none;
     cursor: crosshair;
   }

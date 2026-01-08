@@ -1,30 +1,37 @@
 <script lang="ts">
   import { CONFIG } from './config.svelte';
 
-  let { valueY = $bindable(0), active = $bindable(false) } = $props();
+  let { 
+    valueY = $bindable(0), 
+    active = $bindable(false), 
+    touchId = $bindable(null),
+    centerX,
+    centerY
+  } = $props<{
+    valueY: number;
+    active: boolean;
+    touchId: number | null;
+    centerX: number;
+    centerY: number;
+  }>();
 
-  let joystick = $state({ x: 0, y: 0, touchId: null as number | null });
-
-  function handleJoystickStart(e: TouchEvent) {
-    const touch = e.changedTouches[0];
-    active = true;
-    joystick.touchId = touch.identifier;
-  }
+  let joystick = $state({ x: 0, y: 0 });
 
   function handleTouchMove(e: TouchEvent) {
     if (!active) return;
     
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i];
-      if (touch.identifier === joystick.touchId) {
-        const base = document.querySelector('.joystick-base')?.getBoundingClientRect();
-        if (!base) return;
+      if (touch.identifier === touchId) {
+        const container = document.querySelector('.game-container');
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
         
-        const centerX = base.left + base.width / 2;
-        const centerY = base.top + base.height / 2;
+        const absCenterX = rect.left + centerX;
+        const absCenterY = rect.top + centerY;
         
-        const dx = touch.clientX - centerX;
-        const dy = touch.clientY - centerY;
+        const dx = touch.clientX - absCenterX;
+        const dy = touch.clientY - absCenterY;
         const distance = Math.min(Math.sqrt(dx * dx + dy * dy), CONFIG.GAME.JOYSTICK.RADIUS);
         const angle = Math.atan2(dy, dx);
         
@@ -35,12 +42,16 @@
     }
   }
 
-  function handleTouchEnd() {
-    active = false;
-    joystick.x = 0;
-    joystick.y = 0;
-    joystick.touchId = null;
-    valueY = 0;
+  function handleTouchEnd(e: TouchEvent) {
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId) {
+        active = false;
+        joystick.x = 0;
+        joystick.y = 0;
+        touchId = null;
+        valueY = 0;
+      }
+    }
   }
 </script>
 
@@ -48,8 +59,7 @@
 
 <div 
   class="joystick-base" 
-  style="width: {CONFIG.GAME.JOYSTICK.BASE_SIZE}px; height: {CONFIG.GAME.JOYSTICK.BASE_SIZE}px;"
-  ontouchstart={handleJoystickStart}
+  style="width: {CONFIG.GAME.JOYSTICK.BASE_SIZE}px; height: {CONFIG.GAME.JOYSTICK.BASE_SIZE}px; left: {centerX}px; top: {centerY}px;"
 >
   <div 
     class="joystick-handle" 
@@ -64,14 +74,13 @@
 <style>
   .joystick-base {
     position: absolute;
-    bottom: 40px;
-    left: 40px;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: translate(-50%, -50%);
     z-index: 10;
     touch-action: none;
   }
