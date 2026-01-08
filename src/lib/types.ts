@@ -1,5 +1,7 @@
 import type { EnemyType } from './config.svelte';
 
+export type GameState = 'start' | 'playing' | 'won' | 'lost';
+
 export interface Enemy {
   id: number;
   x: number;

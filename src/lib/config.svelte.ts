@@ -1,9 +1,9 @@
 import playerImg from '../assets/kylie-eating-head-rotated.png';
 import strawberryImg from '../assets/strawberry.png';
 import blueberryImg from '../assets/blueberry.png';
-import catImg from '../assets/kylie-eating-cat2.png';
-import branchImg from '../assets/kylie-mouth-branch2.png';
-import openImg from '../assets/kylie-mouth-open-alt-flipped2.png';
+import catImg from '../assets/eating-cat.png';
+import branchImg from '../assets/mouth-branch.png';
+import openImg from '../assets/open-mouth.png';
 
 export interface EnemyType {
   id: number;
