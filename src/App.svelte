@@ -38,15 +38,11 @@
   });
 
   onMount(async () => {
-    const imagesToPreload = [
-      CONFIG.PLAYER.SRC,
-      ...CONFIG.ENEMIES.map(e => e.src)
-    ].filter(Boolean);
-
     const savedSettings = localStorage.getItem('strawberry_eater_settings');
     if (savedSettings) {
       try {
         const s = JSON.parse(savedSettings);
+        CONFIG.difficulty = s.difficulty ?? CONFIG.difficulty;
         CONFIG.GAME.WIN_TIME_MS = s.WIN_TIME_MS ?? CONFIG.GAME.WIN_TIME_MS;
         CONFIG.GAME.SPAWN_INTERVAL_MS = s.SPAWN_INTERVAL_MS ?? CONFIG.GAME.SPAWN_INTERVAL_MS;
         if (s.JOYSTICK) CONFIG.GAME.JOYSTICK = { ...CONFIG.GAME.JOYSTICK, ...s.JOYSTICK };
@@ -56,6 +52,11 @@
         CONFIG.PLAYER.GROWTH_RATE = s.GROWTH_RATE ?? CONFIG.PLAYER.GROWTH_RATE;
       } catch (e) { console.error("Failed to load settings:", e); }
     }
+
+    const imagesToPreload = [
+      CONFIG.PLAYER.SRC,
+      ...CONFIG.ENEMIES.map(e => e.src)
+    ].filter(Boolean);
 
     try {
       await Promise.all(imagesToPreload.map(src => {

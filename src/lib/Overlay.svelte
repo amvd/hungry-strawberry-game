@@ -1,70 +1,86 @@
 <script lang="ts">
-  import Settings from './Settings.svelte';
-  import type { GameState } from './types';
+  import Settings from "./Settings.svelte";
+  import type { GameState } from "./types";
 
-  let { gameState, score, highScore, isPreloading, onStart, onResume, onQuit } = $props<{
-    gameState: GameState;
-    score: number;
-    highScore: number;
-    isPreloading: boolean;
-    onStart: () => void;
-    onResume?: () => void;
-    onQuit?: () => void;
-  }>();
+  let { gameState, score, highScore, isPreloading, onStart, onResume, onQuit } =
+    $props<{
+      gameState: GameState;
+      score: number;
+      highScore: number;
+      isPreloading: boolean;
+      onStart: () => void;
+      onResume?: () => void;
+      onQuit?: () => void;
+    }>();
 
   let showSettings = $state(false);
   let showInstructions = $state(false);
 </script>
 
-<div class="overlay {['start', 'paused'].includes(gameState) ? 'theme-strawberry' : 'theme-blueberry'}">
-  {#if gameState === 'start'}
+<div
+  class="overlay {['start', 'paused'].includes(gameState)
+    ? 'theme-strawberry'
+    : 'theme-blueberry'}"
+>
+  {#if gameState === "start"}
     <svg width="0" height="0" style="position: absolute;">
       <defs>
         <clipPath id="heart-clip" clipPathUnits="objectBoundingBox">
-          <path d="M0.5,1 C0.5,1 0,0.7 0,0.35 C0,0.15 0.2,0 0.5,0.2 C0.8,0 1,0.15 1,0.35 C1,0.7 0.5,1 0.5,1" />
+          <path
+            d="M0.5,1 C0.5,1 0,0.7 0,0.35 C0,0.15 0.2,0 0.5,0.2 C0.8,0 1,0.15 1,0.35 C1,0.7 0.5,1 0.5,1"
+          />
         </clipPath>
       </defs>
     </svg>
     <div class="heart-shape"></div>
   {/if}
 
-  {#if gameState === 'start'}
+  {#if gameState === "start"}
     <h1>Hungry Strawberry</h1>
     {#if isPreloading}
       <button disabled>Loading Assets...</button>
     {:else}
       <button onclick={onStart}>Play</button>
-      <button class="secondary-btn" onclick={() => showInstructions = true}>How to Play</button>
+      <button class="secondary-btn" onclick={() => (showInstructions = true)}
+        >How to Play</button
+      >
     {/if}
-  {:else if gameState === 'won'}
+  {:else if gameState === "won"}
     <h1>You Won!</h1>
     <p class="final-score">{score}</p>
     <p class="high-score">Best: {highScore}</p>
     <button onclick={onStart}>Play Again</button>
-  {:else if gameState === 'lost'}
+  {:else if gameState === "lost"}
     <h1>You got eated :(</h1>
     <p class="final-score">{score}</p>
     <p class="high-score">Best: {highScore}</p>
     <button onclick={onStart}>Try Again</button>
-  {:else if gameState === 'paused'}
+  {:else if gameState === "paused"}
     <h1>Paused</h1>
     <button onclick={onResume}>Resume</button>
     <button class="secondary-btn" onclick={onQuit}>Quit to Menu</button>
   {/if}
 
-  <button class="settings-btn" onclick={() => showSettings = true} aria-label="Settings">
+  <button
+    class="settings-btn"
+    onclick={() => (showSettings = true)}
+    aria-label="Settings"
+  >
     ⚙️
   </button>
 
   {#if showSettings}
-    <Settings onClose={() => showSettings = false} />
+    <Settings onClose={() => (showSettings = false)} />
   {/if}
 
   {#if showInstructions}
-    <div class="modal-backdrop" onclick={() => showInstructions = false}>
+    <div class="modal-backdrop" onclick={() => (showInstructions = false)}>
       <div class="modal-content" onclick={(e) => e.stopPropagation()}>
-        <p>Eat things that are smaller than you. Get eaten by things that are bigger than you. That is all. :)</p>
-        <button onclick={() => showInstructions = false}>Got it!</button>
+        <p>
+          Eat things that are smaller than you. Get eaten by things that are
+          bigger than you. That is all. :)
+        </p>
+        <button onclick={() => (showInstructions = false)}>Got it!</button>
       </div>
     </div>
   {/if}
@@ -99,10 +115,12 @@
     background-color: #e74c3c;
     background-image: radial-gradient(#f1c40f 12%, transparent 12%);
     background-size: 40px 60px;
-    background-position: 0 0, 20px 30px;
+    background-position:
+      0 0,
+      20px 30px;
     clip-path: url(#heart-clip);
     z-index: -1;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
   }
 
   .theme-strawberry h1 {
@@ -182,10 +200,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background 0.2s, transform 0.2s;
+    transition:
+      background 0.2s,
+      transform 0.2s;
     z-index: 20;
   }
-  .settings-btn:hover { background: rgba(255, 255, 255, 0.4); transform: rotate(30deg); }
+  .settings-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: rotate(30deg);
+  }
 
   .modal-backdrop {
     position: fixed;
@@ -206,7 +229,7 @@
     border-radius: 1rem;
     max-width: 400px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
   .modal-content p {

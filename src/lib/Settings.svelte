@@ -1,11 +1,17 @@
 <script lang="ts">
   import { CONFIG } from './config.svelte';
+  import DifficultySelector from './DifficultySelector.svelte';
   
   let { onClose } = $props<{ onClose: () => void }>();
 
   // Local state for win time to handle ms/sec conversion smoothly
   let winTimeSec = $state(CONFIG.GAME.WIN_TIME_MS / 1000);
   let growthRateDisplay = $state(CONFIG.PLAYER.GROWTH_RATE * 100);
+
+  // Update display values when difficulty is changed via the selector
+  $effect(() => {
+    growthRateDisplay = Math.round(CONFIG.PLAYER.GROWTH_RATE * 100);
+  });
   
   $effect(() => {
     CONFIG.GAME.WIN_TIME_MS = winTimeSec * 1000;
@@ -17,6 +23,7 @@
 
   function handleClose() {
     localStorage.setItem('strawberry_eater_settings', JSON.stringify({
+      difficulty: CONFIG.difficulty,
       WIN_TIME_MS: CONFIG.GAME.WIN_TIME_MS,
       SPAWN_INTERVAL_MS: CONFIG.GAME.SPAWN_INTERVAL_MS,
       JOYSTICK: $state.snapshot(CONFIG.GAME.JOYSTICK),
@@ -35,6 +42,8 @@
   <div class="settings-content" onclick={(e) => e.stopPropagation()}>
     <h2>Game Settings</h2>
     
+    <DifficultySelector />
+
     <div class="setting-group">
       <label class="checkbox-label">
         <input type="checkbox" bind:checked={CONFIG.GAME.BUTTERFLIES.ENABLED} />
