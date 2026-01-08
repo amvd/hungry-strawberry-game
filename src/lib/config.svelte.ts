@@ -27,7 +27,7 @@ export const CONFIG = $state({
     GROWTH_RATE: 0.05, // Multiplier of enemy width added to player size when eating
     SRC: playerImg, // URL for the player image
     COLOR: '#3498db', // Blue
-    X_POSITION: 50, // Fixed X position from left
+    X_POSITION: 120, // Fixed X position from left
     ASPECT_RATIO: 1.18,
   },
   GAME: {
